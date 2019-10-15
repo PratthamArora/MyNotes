@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">MyNotes</string>
+    <string name="profile">Profile</string>
+    <string name="logout">Logout</string>
+    <string name="login_register">LogIn / Register</string>
+    <string name="update_profile">Update Profile</string>
+    <string name="display_name">Display Name</string>
 </resources>
