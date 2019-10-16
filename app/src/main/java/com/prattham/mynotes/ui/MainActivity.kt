@@ -1,7 +1,6 @@
 package com.prattham.mynotes.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -13,7 +12,15 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
+
+    override fun onAuthStateChanged(p0: FirebaseAuth) {
+
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            startActivity<LoginActivity>()
+            finish()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,10 +33,6 @@ class MainActivity : AppCompatActivity() {
                 .setAction("Action", null).show()
         }
 
-        if (FirebaseAuth.getInstance().currentUser == null) {
-            startActivity<LoginActivity>()
-            finish()
-        }
 
     }
 
@@ -46,21 +49,22 @@ class MainActivity : AppCompatActivity() {
 
             }
             R.id.action_logout -> {
-
+                toast("LogOut Successful")
                 AuthUI.getInstance().signOut(this)
-                    .addOnCompleteListener {
-                        if (it.isSuccessful) {
-                            toast("LogOut Successful")
-                            startActivity<LoginActivity>()
-                            finish()
-                        } else
-                            Log.e("TAG", "onComplete", it.exception)
-                    }
-                return true
             }
 
         }
         return true
     }
 
+
+    override fun onStart() {
+        super.onStart()
+        FirebaseAuth.getInstance().addAuthStateListener(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        FirebaseAuth.getInstance().removeAuthStateListener(this)
+    }
 }
