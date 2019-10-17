@@ -1,11 +1,16 @@
 package com.prattham.mynotes.ui
 
 import android.os.Bundle
+import android.util.AttributeSet
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.firebase.ui.auth.AuthUI
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.prattham.mynotes.R
 import kotlinx.android.synthetic.main.activity_main.*
@@ -25,15 +30,31 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
-        supportActionBar?.title = "My Notes"
+        setSupportActionBar(bottom_bar)
+
 
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            showAlertDialog()
+
         }
 
 
+    }
+
+    private fun showAlertDialog() {
+
+        val addNote = TextInputEditText(this)
+        val alertDialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Add Note")
+            .setView(addNote)
+            .setPositiveButton(
+                "Add"
+            ) { dialog, which ->
+                Log.d("TAG", "OnClick:" + addNote.text)
+            }
+            .setNegativeButton("Cancel", null)
+            .setIcon(R.drawable.diary)
+            .show()
     }
 
 
