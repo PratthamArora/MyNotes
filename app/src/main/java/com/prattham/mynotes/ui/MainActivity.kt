@@ -5,28 +5,29 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.prattham.mynotes.R
+import com.prattham.mynotes.adapter.NotesAdapter
 import com.prattham.mynotes.model.Notes
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
 import java.util.*
 
 class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
 
-    override fun onAuthStateChanged(p0: FirebaseAuth) {
+    lateinit var notesAdapter: NotesAdapter
 
-        if (FirebaseAuth.getInstance().currentUser == null) {
-            startActivity<LoginActivity>()
-            finish()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,5 +107,33 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
     override fun onStop() {
         super.onStop()
         FirebaseAuth.getInstance().removeAuthStateListener(this)
+        notesAdapter.stopListening()
+    }
+
+
+    override fun onAuthStateChanged(p0: FirebaseAuth) {
+
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            startActivity<LoginActivity>()
+            finish()
+            return
+        }
+        p0.currentUser?.let { initRecyclerView(it) }
+    }
+
+    private fun initRecyclerView(user: FirebaseUser) {
+        recylerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
+
+        val query = FirebaseFirestore.getInstance()
+            .collection("Notes")
+            .whereEqualTo("userId", user.uid)
+
+        val options = FirestoreRecyclerOptions.Builder<Notes>()
+            .setQuery(query, Notes::class.java)
+            .build()
+        notesAdapter = NotesAdapter(options)
+        recylerView.adapter = notesAdapter
+
+        notesAdapter.startListening()
     }
 }
