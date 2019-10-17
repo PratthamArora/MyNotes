@@ -243,9 +243,11 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
     override fun handleDeleteItem(snapshot: DocumentSnapshot) {
         snapshot.reference.delete()
             .addOnSuccessListener {
-                Log.d("delete","OnDelete")
+                Log.d("delete", "OnDelete")
             }
     }
 
 
 }
+
+
