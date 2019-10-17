@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.auth.AuthUI
@@ -14,9 +15,11 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.prattham.mynotes.R
 import com.prattham.mynotes.adapter.NotesAdapter
+import com.prattham.mynotes.listener.NoteListener
 import com.prattham.mynotes.model.Notes
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -24,9 +27,10 @@ import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
 import java.util.*
 
-class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
+class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener, NoteListener {
 
-    lateinit var notesAdapter: NotesAdapter
+
+    private var notesAdapter: NotesAdapter? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +38,7 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
         setContentView(R.layout.activity_main)
         setSupportActionBar(bottom_bar)
 
+        recylerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
         fab.setOnClickListener { view ->
             showAlertDialog()
@@ -107,7 +112,7 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
     override fun onStop() {
         super.onStop()
         FirebaseAuth.getInstance().removeAuthStateListener(this)
-        notesAdapter.stopListening()
+        notesAdapter?.stopListening()
     }
 
 
@@ -122,6 +127,7 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
     }
 
     private fun initRecyclerView(user: FirebaseUser) {
+
         recylerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
 
         val query = FirebaseFirestore.getInstance()
@@ -131,9 +137,46 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
         val options = FirestoreRecyclerOptions.Builder<Notes>()
             .setQuery(query, Notes::class.java)
             .build()
-        notesAdapter = NotesAdapter(options)
+        notesAdapter = NotesAdapter(options, this)
         recylerView.adapter = notesAdapter
 
-        notesAdapter.startListening()
+        notesAdapter?.startListening()
     }
+
+    override fun handleCheck(isChecked: Boolean, snapshot: DocumentSnapshot) {
+        Log.d("Onchecked", "handleCheck$isChecked")
+        snapshot.reference.update("completed", isChecked)
+            .addOnSuccessListener {
+                Log.d("handlecheck", "OnSuccess:")
+            }
+            .addOnFailureListener {
+                Log.d("handlecheck", "OnFailure" + it.localizedMessage!!)
+            }
+
+
+    }
+
+    override fun handleEditNote(snapshot: DocumentSnapshot) {
+        val data = snapshot.toObject(Notes::class.java)
+
+        val editNote = TextInputEditText(this)
+        editNote.setText(data!!.text.toString())
+
+        val alertDialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Edit Note")
+            .setView(editNote)
+            .setPositiveButton(
+                "Save"
+            ) { dialog, which ->
+                Log.d("TAG", "OnClick:" + editNote.text)
+                val newNote = editNote.text.toString()
+                data.text = newNote
+                snapshot.reference.set(data)
+            }
+            .setNegativeButton("Cancel", null)
+            .setIcon(R.drawable.diary)
+            .show()
+    }
+
+
 }
