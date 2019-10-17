@@ -1,11 +1,14 @@
 package com.prattham.mynotes.ui
 
+import android.graphics.Canvas
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.auth.AuthUI
@@ -17,17 +20,19 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.prattham.mynotes.R
 import com.prattham.mynotes.adapter.NotesAdapter
-import com.prattham.mynotes.listener.NoteListener
 import com.prattham.mynotes.model.Notes
-import kotlinx.android.synthetic.main.activity_main.*
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.android.synthetic.main.content_main.*
 import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
 import java.util.*
 
-class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener, NoteListener {
+
+class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
+    NotesAdapter.NoteListener {
 
 
     private var notesAdapter: NotesAdapter? = null
@@ -129,10 +134,11 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener, NoteLi
     private fun initRecyclerView(user: FirebaseUser) {
 
         recylerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
-
         val query = FirebaseFirestore.getInstance()
             .collection("Notes")
             .whereEqualTo("userId", user.uid)
+            .orderBy("completed", Query.Direction.ASCENDING)
+            .orderBy("created", Query.Direction.DESCENDING)
 
         val options = FirestoreRecyclerOptions.Builder<Notes>()
             .setQuery(query, Notes::class.java)
@@ -141,20 +147,62 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener, NoteLi
         recylerView.adapter = notesAdapter
 
         notesAdapter?.startListening()
-    }
 
-    override fun handleCheck(isChecked: Boolean, snapshot: DocumentSnapshot) {
-        Log.d("Onchecked", "handleCheck$isChecked")
-        snapshot.reference.update("completed", isChecked)
-            .addOnSuccessListener {
-                Log.d("handlecheck", "OnSuccess:")
-            }
-            .addOnFailureListener {
-                Log.d("handlecheck", "OnFailure" + it.localizedMessage!!)
-            }
+        val itemTouchHelper = ItemTouchHelper(simpleCallback)
+        itemTouchHelper.attachToRecyclerView(recylerView)
 
 
     }
+
+    private val simpleCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            return false
+
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            toast("Note Deleted")
+
+            val notesHelper = viewHolder as NotesAdapter.NoteViewHolder
+            notesHelper.deleteItem()
+        }
+
+        override fun onChildDraw(
+            c: Canvas,
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            dX: Float,
+            dY: Float,
+            actionState: Int,
+            isCurrentlyActive: Boolean
+        ) {
+            RecyclerViewSwipeDecorator.Builder(
+                c,
+                recyclerView,
+                viewHolder,
+                dX,
+                dY,
+                actionState,
+                isCurrentlyActive
+            )
+                .addBackgroundColor(
+                    ContextCompat.getColor(
+                        this@MainActivity,
+                        R.color.colorAccentDark
+                    )
+                )
+                .addActionIcon(R.drawable.delete)
+                .create()
+                .decorate()
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+        }
+
+    }
+
 
     override fun handleEditNote(snapshot: DocumentSnapshot) {
         val data = snapshot.toObject(Notes::class.java)
@@ -176,6 +224,27 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener, NoteLi
             .setNegativeButton("Cancel", null)
             .setIcon(R.drawable.diary)
             .show()
+    }
+
+    override fun handleCheckChanged(isChecked: Boolean, snapshot: DocumentSnapshot) {
+
+        Log.d("Onchecked", "handleCheck$isChecked")
+        snapshot.reference.update("completed", isChecked)
+            .addOnSuccessListener {
+                Log.d("handlecheck", "OnSuccess:")
+            }
+            .addOnFailureListener {
+                Log.d("handlecheck", "OnFailure" + it.localizedMessage!!)
+            }
+
+    }
+
+
+    override fun handleDeleteItem(snapshot: DocumentSnapshot) {
+        snapshot.reference.delete()
+            .addOnSuccessListener {
+                Log.d("delete","OnDelete")
+            }
     }
 
 
