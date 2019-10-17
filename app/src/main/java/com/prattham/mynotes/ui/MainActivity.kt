@@ -1,21 +1,22 @@
 package com.prattham.mynotes.ui
 
 import android.os.Bundle
-import android.util.AttributeSet
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.prattham.mynotes.R
+import com.prattham.mynotes.model.Notes
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
+import java.util.*
 
 class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
 
@@ -51,10 +52,28 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener {
                 "Add"
             ) { dialog, which ->
                 Log.d("TAG", "OnClick:" + addNote.text)
+                addNoteFunc(addNote.text.toString())
             }
             .setNegativeButton("Cancel", null)
             .setIcon(R.drawable.diary)
             .show()
+    }
+
+    private fun addNoteFunc(text: String) {
+
+        val userID = FirebaseAuth.getInstance().currentUser!!.uid
+        val notes = Notes(text, false, Timestamp(Date()), userID)
+
+        FirebaseFirestore.getInstance()
+            .collection("Notes")
+            .add(notes)
+            .addOnSuccessListener {
+                Log.d("OnSucces", "Note added successfully")
+            }
+            .addOnFailureListener {
+                Log.d("OnFailure", it.localizedMessage!!)
+
+            }
     }
 
 
