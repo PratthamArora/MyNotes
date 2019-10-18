@@ -56,7 +56,7 @@ class NotesAdapter(
         }
 
         init {
-            checkBox.setOnCheckedChangeListener { compoundButton, isChecked ->
+            checkBox.setOnCheckedChangeListener { _, isChecked ->
                 val snapshot =
                     snapshots.getSnapshot(adapterPosition)
                 val note =

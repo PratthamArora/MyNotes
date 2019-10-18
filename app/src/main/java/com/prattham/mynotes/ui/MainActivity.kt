@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
 
         recylerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        fab.setOnClickListener { view ->
+        fab.setOnClickListener {
             showAlertDialog()
 
         }
@@ -58,12 +58,12 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
     private fun showAlertDialog() {
 
         val addNote = TextInputEditText(this)
-        val alertDialog = MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Add Note")
             .setView(addNote)
             .setPositiveButton(
                 "Add"
-            ) { dialog, which ->
+            ) { _, _ ->
                 Log.d("TAG", "OnClick:" + addNote.text)
                 addNoteFunc(addNote.text.toString())
             }
@@ -213,12 +213,12 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
         val editNote = TextInputEditText(this)
         editNote.setText(data!!.text.toString())
 
-        val alertDialog = MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Edit Note")
             .setView(editNote)
             .setPositiveButton(
                 "Save"
-            ) { dialog, which ->
+            ) { _, _ ->
                 Log.d("TAG", "OnClick:" + editNote.text)
                 val newNote = editNote.text.toString()
                 data.text = newNote

@@ -46,9 +46,11 @@
             android:layout_height="wrap_content"
             android:overScrollMode="ifContentScrolls"
             android:src="@drawable/note"
+            app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
             app:backgroundTint="@color/colorAccent"
             app:layout_anchor="@id/bottom_bar"
             app:rippleColor="@color/colorAccentLight" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
+

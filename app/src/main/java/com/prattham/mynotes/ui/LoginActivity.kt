@@ -15,7 +15,7 @@ import org.jetbrains.anko.toast
 
 class LoginActivity : AppCompatActivity() {
 
-    val ReqCode = 10001
+    private val reqCode = 10001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +44,7 @@ class LoginActivity : AppCompatActivity() {
                 .setTosAndPrivacyPolicyUrls("https://example.com", "https://example.com")
                 .build()
 
-            startActivityForResult(intent, ReqCode)
+            startActivityForResult(intent, reqCode)
 
 
         }
@@ -52,13 +52,13 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == ReqCode) {
+        if (requestCode == reqCode) {
             if (resultCode == Activity.RESULT_OK) {
                 //user is logged in
                 val user = FirebaseAuth.getInstance().currentUser
                 Log.d("TAG", "onActivityResult" + user?.email)
                 if (user?.metadata?.creationTimestamp == user?.metadata?.lastSignInTimestamp) {
-                    toast("Welcome New User")
+                    toast("Welcome ")
                 } else {
                     //old user
                     toast("Welcome Back")
