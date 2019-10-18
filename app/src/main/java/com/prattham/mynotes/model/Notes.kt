@@ -6,7 +6,7 @@ class Notes {
     var text: String? = null
     var completed: Boolean = false
     var created: Timestamp? = null
-    private var userId: String? = null
+    var userId: String? = null
 
     constructor()
     constructor(text: String, completed: Boolean, created: Timestamp, userId: String) {
