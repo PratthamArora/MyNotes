@@ -39,9 +39,9 @@ class NotesAdapter(
         parent: ViewGroup,
         viewType: Int
     ): NoteViewHolder {
-        val layoutInflater: LayoutInflater =
+        val layoutInflater =
             LayoutInflater.from(parent.context)
-        val view: View =
+        val view =
             layoutInflater.inflate(R.layout.item_data, parent, false)
         return NoteViewHolder(view)
     }

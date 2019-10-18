@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -25,6 +26,7 @@ import com.prattham.mynotes.R
 import com.prattham.mynotes.adapter.NotesAdapter
 import com.prattham.mynotes.model.Notes
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
@@ -128,12 +130,13 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
             finish()
             return
         }
-        p0.currentUser?.let { initRecyclerView(it) }
+        initRecyclerView(p0.currentUser!!)
     }
 
     private fun initRecyclerView(user: FirebaseUser) {
 
         recylerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
+
         val query = FirebaseFirestore.getInstance()
             .collection("Notes")
             .whereEqualTo("userId", user.uid)
@@ -143,10 +146,11 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
         val options = FirestoreRecyclerOptions.Builder<Notes>()
             .setQuery(query, Notes::class.java)
             .build()
+
         notesAdapter = NotesAdapter(options, this)
         recylerView.adapter = notesAdapter
 
-        notesAdapter?.startListening()
+        notesAdapter!!.startListening()
 
         val itemTouchHelper = ItemTouchHelper(simpleCallback)
         itemTouchHelper.attachToRecyclerView(recylerView)
@@ -241,9 +245,18 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
 
 
     override fun handleDeleteItem(snapshot: DocumentSnapshot) {
-        snapshot.reference.delete()
+
+        val documentReference = snapshot.reference
+        val notes = snapshot.toObject(Notes::class.java)
+
+        documentReference.delete()
             .addOnSuccessListener {
                 Log.d("delete", "OnDelete")
+                Snackbar.make(mainView, "Note Deleted", Snackbar.LENGTH_LONG)
+                    .setAction("Undo") {
+                        notes?.let { it1 -> documentReference.set(it1) }
+                    }
+                    .show()
             }
     }
 
