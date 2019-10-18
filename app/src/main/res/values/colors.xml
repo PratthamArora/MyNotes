@@ -4,7 +4,7 @@
 
     <color name="colorPrimary">#727BFA</color> <!-- 9B59B6 -->
     <!--<color name="colorPrimaryDark">#ac1900</color>-->
-    <!--    <color name="colorPrimaryDark">#000000</color>-->
+        <color name="colorSnackBar">#000000</color>
     <color name="colorPrimaryDark">#FC4545B6</color>
     <color name="colorAccent">#FF4081</color>
     <color name="colorAccentDark">#f50057</color>

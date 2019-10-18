@@ -169,7 +169,6 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            toast("Note Deleted")
 
             val notesHelper = viewHolder as NotesAdapter.NoteViewHolder
             notesHelper.deleteItem()
@@ -256,10 +255,11 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
                     .setAction("Undo") {
                         notes?.let { it1 -> documentReference.set(it1) }
                     }
+                    .setBackgroundTint(resources.getColor(R.color.colorSnackBar))
+                    .setTextColor(resources.getColor(R.color.colorAccentLight))
                     .show()
             }
     }
-
 
 }
 
