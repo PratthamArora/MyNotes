@@ -46,7 +46,6 @@ class MainActivity : AppCompatActivity(), FirebaseAuth.AuthStateListener,
         setSupportActionBar(bottom_bar)
 
         recylerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
-
         fab.setOnClickListener {
             showAlertDialog()
 
